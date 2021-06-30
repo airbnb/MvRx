@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onCompletion
@@ -416,18 +417,22 @@ abstract class MavericksViewModel<S : MavericksState>(
         deliveryMode: DeliveryMode,
         action: suspend (T) -> Unit
     ): Job {
-        val flow = if (lifecycleOwner == null || MavericksTestOverrides.FORCE_DISABLE_LIFECYCLE_AWARE_OBSERVER) {
-            this
-        } else if (deliveryMode is UniqueOnly) {
-            val lastDeliveredValue: T? = lastDeliveredValue(deliveryMode)
-            this
-                .assertOneActiveSubscription(lifecycleOwner, deliveryMode)
-                .dropWhile { it == lastDeliveredValue }
-                .flowWhenStarted(lifecycleOwner)
-                .distinctUntilChanged()
-                .onEach { lastDeliveredStates[deliveryMode.subscriptionId] = it }
-        } else {
-            flowWhenStarted(lifecycleOwner)
+        val flow = when {
+            lifecycleOwner == null || MavericksTestOverrides.FORCE_DISABLE_LIFECYCLE_AWARE_OBSERVER -> this
+            deliveryMode is UniqueOnly -> configureAndFilter(lifecycleOwner, deliveryMode.subscriptionId, true, deliveryMode) { flow, _ ->
+                flow.dropWhile { it == lastDeliveredValue(deliveryMode.subscriptionId) }
+            }
+            deliveryMode is Custom -> {
+                @Suppress("UNCHECKED_CAST")
+                configureAndFilter(
+                    lifecycleOwner,
+                    deliveryMode.subscriptionId,
+                    deliveryMode.distinctOnly,
+                    deliveryMode,
+                    deliveryMode.flowConfiguration as? ((Flow<T>, DeliveryMode) -> Flow<T>)
+                )
+            }
+            else -> flowWhenStarted(lifecycleOwner)
         }
 
         val scope = (lifecycleOwner?.lifecycleScope ?: viewModelScope) + configFactory.subscriptionCoroutineContextOverride
@@ -440,33 +445,47 @@ abstract class MavericksViewModel<S : MavericksState>(
         }
     }
 
+    private fun <T : Any> Flow<T>.configureAndFilter(
+        lifecycleOwner: LifecycleOwner,
+        subscriptionId: String,
+        distinctOnly: Boolean,
+        deliveryMode: DeliveryMode,
+        flowConfiguration: ((Flow<T>, DeliveryMode) -> Flow<T>)?
+    ): Flow<T> {
+        return this.assertOneActiveSubscription(lifecycleOwner, subscriptionId)
+            .run { flowConfiguration?.invoke(this, deliveryMode) ?: this }
+            .flowWhenStarted(lifecycleOwner)
+            .run { if (distinctOnly) distinctUntilChanged() else this }
+            .onEach { lastDeliveredStates[subscriptionId] = it }
+    }
+
     @Suppress("EXPERIMENTAL_API_USAGE")
-    private fun <T> Flow<T>.assertOneActiveSubscription(owner: LifecycleOwner, deliveryMode: UniqueOnly): Flow<T> {
+    private fun <T> Flow<T>.assertOneActiveSubscription(owner: LifecycleOwner, subscriptionId: String): Flow<T> {
         val observer = object : DefaultLifecycleObserver {
             override fun onCreate(owner: LifecycleOwner) {
-                if (activeSubscriptions.contains(deliveryMode.subscriptionId)) error(duplicateSubscriptionMessage(deliveryMode))
-                activeSubscriptions += deliveryMode.subscriptionId
+                if (activeSubscriptions.contains(subscriptionId)) error(duplicateSubscriptionMessage(subscriptionId))
+                activeSubscriptions += subscriptionId
             }
 
             override fun onDestroy(owner: LifecycleOwner) {
-                activeSubscriptions.remove(deliveryMode.subscriptionId)
+                activeSubscriptions.remove(subscriptionId)
             }
         }
 
         owner.lifecycle.addObserver(observer)
         return onCompletion {
-            activeSubscriptions.remove(deliveryMode.subscriptionId)
+            activeSubscriptions.remove(subscriptionId)
             owner.lifecycle.removeObserver(observer)
         }
     }
 
-    private fun <T> lastDeliveredValue(deliveryMode: UniqueOnly): T? {
+    fun <T> lastDeliveredValue(subscriptionId: String?): T? {
         @Suppress("UNCHECKED_CAST")
-        return lastDeliveredStates[deliveryMode.subscriptionId] as T?
+        return subscriptionId?.let { lastDeliveredStates[it] } as T?
     }
 
-    private fun duplicateSubscriptionMessage(deliveryMode: UniqueOnly) = """
-        Subscribing with a duplicate subscription id: ${deliveryMode.subscriptionId}.
+    private fun duplicateSubscriptionMessage(subscriptionId: String) = """
+        Subscribing with a duplicate subscription id: $subscriptionId.
         If you have multiple uniqueOnly subscriptions in a MvRx view that listen to the same properties
         you must use a custom subscription id. If you are using a custom MvRxView, make sure you are using the proper
         lifecycle owner. See BaseMvRxFragment for an example.

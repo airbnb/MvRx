@@ -10,9 +10,10 @@ import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -673,7 +674,7 @@ class ViewModelSubscriberTest : BaseTest() {
     }
 
     @Test
-    fun testSubscribeNotCalledOnStartIfNoUpdateOccurredInStop() {
+    fun testUniqueOnlySubscribeNotCalledOnStartIfNoUpdateOccurredInStop() {
         owner.lifecycle.currentState = Lifecycle.State.STARTED
 
         var callCount = 0
@@ -686,6 +687,42 @@ class ViewModelSubscriberTest : BaseTest() {
 
         owner.lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_START)
         assertEquals(1, callCount)
+    }
+
+    @Test
+    fun testCustomSubscribeCalledOnStartIfUpdateOccurredInStop() {
+        owner.lifecycle.currentState = Lifecycle.State.STARTED
+
+        var callCount = 0
+        val deliveryMode = custom("id")
+        viewModel._internal(owner, deliveryMode = deliveryMode) {
+            callCount++
+        }
+
+        owner.lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+
+        viewModel.setFoo(1)
+        assertEquals(0, callCount)
+
+        owner.lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_START)
+        assertEquals(1, callCount)
+    }
+
+    @Test
+    fun testCustomSubscribeNotCalledOnStartIfNoUpdateOccurredInStop() {
+        owner.lifecycle.currentState = Lifecycle.State.STARTED
+
+        var callCount = 0
+        val deliveryMode = custom("id")
+        viewModel._internal(owner, deliveryMode = deliveryMode) {
+            callCount++
+        }
+
+        owner.lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+        assertEquals(0, callCount)
+
+        owner.lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_START)
+        assertEquals(0, callCount)
     }
 
     @Test
@@ -794,5 +831,10 @@ class ViewModelSubscriberTest : BaseTest() {
         delay(6000)
         assertEquals(listOf(0, 1, 2, 3, 4, 5), receivedValues)
         subscribeJob.cancel()
+    }
+
+    private fun custom(customId: String) = Custom(customId, true) { flow, deliveryMode ->
+        flow.drop(1)
+            .dropWhile { it == viewModel.lastDeliveredValue((deliveryMode as? com.airbnb.mvrx.Custom)?.subscriptionId) }
     }
 }
