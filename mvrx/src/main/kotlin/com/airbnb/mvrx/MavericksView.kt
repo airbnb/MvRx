@@ -8,6 +8,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import kotlinx.coroutines.flow.Flow
 import kotlin.reflect.KProperty1
 
 // Set of [MavericksView identity hash codes that have a pending invalidate.
@@ -90,7 +91,19 @@ interface MavericksView : LifecycleOwner {
      * in this fragment with exact same properties (i.e. two subscribes, or two selectSubscribes with the same properties).
      */
     fun uniqueOnly(customId: String? = null): UniqueOnly {
-        return UniqueOnly(listOfNotNull(mvrxViewId, customId).joinToString("_"))
+        return UniqueOnly(listOfNotNull(mvrxViewId, UniqueOnly::class.simpleName, customId).joinToString("_"))
+    }
+
+    /**
+     * Return a [Custom] delivery mode with a unique id for this fragment. In rare circumstances, if you
+     * make two identical subscriptions with the same (or all) properties in this fragment, provide a customId
+     * to avoid collisions.
+     *
+     * @param customId An additional custom id to identify this subscription. Only necessary if there are two subscriptions
+     * in this fragment with exact same properties (i.e. two subscribes, or two selectSubscribes with the same properties).
+     */
+    fun custom(customId: String? = null, distinctOnly: Boolean, flowConfiguration: (Flow<*>, DeliveryMode) -> Flow<*>): Custom {
+        return Custom(listOfNotNull(mvrxViewId, Custom::class.simpleName, customId).joinToString("_"), distinctOnly, flowConfiguration)
     }
 
     /**
