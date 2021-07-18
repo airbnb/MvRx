@@ -7,9 +7,9 @@ import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.airbnb.mvrx.Async
 import com.airbnb.mvrx.InternalMavericksApi
+import com.airbnb.mvrx.MavericksState
 import com.airbnb.mvrx.MavericksView
 import com.airbnb.mvrx.MavericksViewModel
-import com.airbnb.mvrx.MavericksState
 import com.airbnb.mvrx.PersistState
 import com.airbnb.mvrx.mocking.MavericksMock.Companion.DEFAULT_INITIALIZATION_NAME
 import com.airbnb.mvrx.mocking.MavericksMock.Companion.DEFAULT_STATE_NAME
@@ -111,7 +111,7 @@ inline fun <reified V : MockableMavericksView> V.combineMocks(
  * @see mockNoViewModels
  */
 fun <V : MockableMavericksView, Args : Parcelable, S : MavericksState> V.mockSingleViewModel(
-    viewModelReference: KProperty1<V, MavericksViewModel<S>>,
+    viewModelReference: KProperty1<V, MavericksViewModel<out S>>,
     defaultState: S,
     defaultArgs: Args?,
     mockBuilder: SingleViewModelMockBuilder<V, Args, S>.() -> Unit
@@ -126,9 +126,9 @@ fun <V : MockableMavericksView, Args : Parcelable, S : MavericksState> V.mockSin
  */
 fun <V : MockableMavericksView,
     S1 : MavericksState,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S2 : MavericksState,
-    VM2 : MavericksViewModel<S2>,
+    VM2 : MavericksViewModel<out S2>,
     Args : Parcelable>
 V.mockTwoViewModels(
     viewModel1Reference: KProperty1<V, VM1>,
@@ -155,11 +155,11 @@ V.mockTwoViewModels(
 @SuppressWarnings("Detekt.LongParameterList")
 fun <V : MockableMavericksView,
     S1 : MavericksState,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S2 : MavericksState,
-    VM2 : MavericksViewModel<S2>,
+    VM2 : MavericksViewModel<out S2>,
     S3 : MavericksState,
-    VM3 : MavericksViewModel<S3>,
+    VM3 : MavericksViewModel<out S3>,
     Args : Parcelable>
 V.mockThreeViewModels(
     viewModel1Reference: KProperty1<V, VM1>,
@@ -190,13 +190,13 @@ V.mockThreeViewModels(
 @SuppressWarnings("Detekt.LongParameterList")
 fun <V : MockableMavericksView,
     S1 : MavericksState,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S2 : MavericksState,
-    VM2 : MavericksViewModel<S2>,
+    VM2 : MavericksViewModel<out S2>,
     S3 : MavericksState,
-    VM3 : MavericksViewModel<S3>,
+    VM3 : MavericksViewModel<out S3>,
     S4 : MavericksState,
-    VM4 : MavericksViewModel<S4>,
+    VM4 : MavericksViewModel<out S4>,
     Args : Parcelable>
 V.mockFourViewModels(
     viewModel1Reference: KProperty1<V, VM1>,
@@ -231,15 +231,15 @@ V.mockFourViewModels(
 @SuppressWarnings("Detekt.LongParameterList")
 fun <V : MockableMavericksView,
     S1 : MavericksState,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S2 : MavericksState,
-    VM2 : MavericksViewModel<S2>,
+    VM2 : MavericksViewModel<out S2>,
     S3 : MavericksState,
-    VM3 : MavericksViewModel<S3>,
+    VM3 : MavericksViewModel<out S3>,
     S4 : MavericksState,
-    VM4 : MavericksViewModel<S4>,
+    VM4 : MavericksViewModel<out S4>,
     S5 : MavericksState,
-    VM5 : MavericksViewModel<S5>,
+    VM5 : MavericksViewModel<out S5>,
     Args : Parcelable>
 V.mockFiveViewModels(
     viewModel1Reference: KProperty1<V, VM1>,
@@ -275,17 +275,17 @@ V.mockFiveViewModels(
 @SuppressWarnings("Detekt.LongParameterList")
 fun <V : MockableMavericksView,
     S1 : MavericksState,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S2 : MavericksState,
-    VM2 : MavericksViewModel<S2>,
+    VM2 : MavericksViewModel<out S2>,
     S3 : MavericksState,
-    VM3 : MavericksViewModel<S3>,
+    VM3 : MavericksViewModel<out S3>,
     S4 : MavericksState,
-    VM4 : MavericksViewModel<S4>,
+    VM4 : MavericksViewModel<out S4>,
     S5 : MavericksState,
-    VM5 : MavericksViewModel<S5>,
+    VM5 : MavericksViewModel<out S5>,
     S6 : MavericksState,
-    VM6 : MavericksViewModel<S6>,
+    VM6 : MavericksViewModel<out S6>,
     Args : Parcelable>
 V.mockSixViewModels(
     viewModel1Reference: KProperty1<V, VM1>,
@@ -325,19 +325,19 @@ V.mockSixViewModels(
 @SuppressWarnings("Detekt.LongParameterList")
 fun <V : MockableMavericksView,
     S1 : MavericksState,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S2 : MavericksState,
-    VM2 : MavericksViewModel<S2>,
+    VM2 : MavericksViewModel<out S2>,
     S3 : MavericksState,
-    VM3 : MavericksViewModel<S3>,
+    VM3 : MavericksViewModel<out S3>,
     S4 : MavericksState,
-    VM4 : MavericksViewModel<S4>,
+    VM4 : MavericksViewModel<out S4>,
     S5 : MavericksState,
-    VM5 : MavericksViewModel<S5>,
+    VM5 : MavericksViewModel<out S5>,
     S6 : MavericksState,
-    VM6 : MavericksViewModel<S6>,
+    VM6 : MavericksViewModel<out S6>,
     S7 : MavericksState,
-    VM7 : MavericksViewModel<S7>,
+    VM7 : MavericksViewModel<out S7>,
     Args : Parcelable>
 V.mockSevenViewModels(
     viewModel1Reference: KProperty1<V, VM1>,
@@ -504,7 +504,7 @@ class MavericksMock<V : MavericksView, Args : Parcelable> @PublishedApi internal
  * A mocked State value and a reference to the ViewModel that the State is intended for.
  */
 data class MockState<V : MavericksView, S : MavericksState> internal constructor(
-    val viewModelProperty: KProperty1<V, MavericksViewModel<S>>,
+    val viewModelProperty: KProperty1<V, MavericksViewModel<out S>>,
     val state: S
 )
 
@@ -512,7 +512,7 @@ data class MockState<V : MavericksView, S : MavericksState> internal constructor
  * Provides a DSL for defining variations to the default mock state.
  */
 class SingleViewModelMockBuilder<V : MockableMavericksView, Args : Parcelable, S : MavericksState> internal constructor(
-    private val viewModelReference: KProperty1<V, MavericksViewModel<S>>,
+    private val viewModelReference: KProperty1<V, MavericksViewModel<out S>>,
     private val defaultState: S,
     defaultArgs: Args?
 ) : MockBuilder<V, Args>(defaultArgs, viewModelReference.pairDefault(defaultState)) {
@@ -568,7 +568,7 @@ class SingleViewModelMockBuilder<V : MockableMavericksView, Args : Parcelable, S
     }
 }
 
-private fun <V : MockableMavericksView, S : MavericksState, VM : MavericksViewModel<S>> KProperty1<V, VM>.pairDefault(
+private fun <V : MockableMavericksView, S : MavericksState, VM : MavericksViewModel<out S>> KProperty1<V, VM>.pairDefault(
     state: MavericksState
 ): Pair<KProperty1<V, MavericksViewModel<MavericksState>>, MavericksState> {
     @Suppress("UNCHECKED_CAST")
@@ -577,9 +577,9 @@ private fun <V : MockableMavericksView, S : MavericksState, VM : MavericksViewMo
 
 class TwoViewModelMockBuilder<
     V : MockableMavericksView,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S1 : MavericksState,
-    VM2 : MavericksViewModel<S2>,
+    VM2 : MavericksViewModel<out S2>,
     S2 : MavericksState,
     Args : Parcelable>
 internal constructor(
@@ -701,9 +701,9 @@ private fun KProperty0<Any?>.splitNameByCase(): String {
 open class TwoStatesBuilder<
     V : MavericksView,
     S1 : MavericksState,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S2 : MavericksState,
-    VM2 : MavericksViewModel<S2>>
+    VM2 : MavericksViewModel<out S2>>
 internal constructor(
     val vm1: KProperty1<V, VM1>,
     val defaultState1: S1,
@@ -720,7 +720,7 @@ internal constructor(
             )
         }
 
-    protected infix fun <VM : MavericksViewModel<S>, S : MavericksState> KProperty1<V, VM>.setStateTo(
+    protected infix fun <VM : MavericksViewModel<out S>, S : MavericksState> KProperty1<V, VM>.setStateTo(
         state: S
     ) {
         @Suppress("UNCHECKED_CAST")
@@ -753,11 +753,11 @@ internal constructor(
 
 class ThreeViewModelMockBuilder<
     V : MockableMavericksView,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S1 : MavericksState,
-    VM2 : MavericksViewModel<S2>,
+    VM2 : MavericksViewModel<out S2>,
     S2 : MavericksState,
-    VM3 : MavericksViewModel<S3>,
+    VM3 : MavericksViewModel<out S3>,
     S3 : MavericksState,
     Args : Parcelable>
 internal constructor(
@@ -885,11 +885,11 @@ internal constructor(
 open class ThreeStatesBuilder<
     V : MavericksView,
     S1 : MavericksState,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S2 : MavericksState,
-    VM2 : MavericksViewModel<S2>,
+    VM2 : MavericksViewModel<out S2>,
     S3 : MavericksState,
-    VM3 : MavericksViewModel<S3>>
+    VM3 : MavericksViewModel<out S3>>
 internal constructor(
     vm1: KProperty1<V, VM1>,
     defaultState1: S1,
@@ -915,13 +915,13 @@ internal constructor(
 
 class FourViewModelMockBuilder<
     V : MockableMavericksView,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S1 : MavericksState,
-    VM2 : MavericksViewModel<S2>,
+    VM2 : MavericksViewModel<out S2>,
     S2 : MavericksState,
-    VM3 : MavericksViewModel<S3>,
+    VM3 : MavericksViewModel<out S3>,
     S3 : MavericksState,
-    VM4 : MavericksViewModel<S4>,
+    VM4 : MavericksViewModel<out S4>,
     S4 : MavericksState,
     Args : Parcelable>
 internal constructor(
@@ -978,13 +978,13 @@ internal constructor(
 open class FourStatesBuilder<
     V : MavericksView,
     S1 : MavericksState,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S2 : MavericksState,
-    VM2 : MavericksViewModel<S2>,
+    VM2 : MavericksViewModel<out S2>,
     S3 : MavericksState,
-    VM3 : MavericksViewModel<S3>,
+    VM3 : MavericksViewModel<out S3>,
     S4 : MavericksState,
-    VM4 : MavericksViewModel<S4>>
+    VM4 : MavericksViewModel<out S4>>
 internal constructor(
     vm1: KProperty1<V, VM1>,
     defaultState1: S1,
@@ -1019,15 +1019,15 @@ internal constructor(
 
 class FiveViewModelMockBuilder<
     V : MockableMavericksView,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S1 : MavericksState,
-    VM2 : MavericksViewModel<S2>,
+    VM2 : MavericksViewModel<out S2>,
     S2 : MavericksState,
-    VM3 : MavericksViewModel<S3>,
+    VM3 : MavericksViewModel<out S3>,
     S3 : MavericksState,
-    VM4 : MavericksViewModel<S4>,
+    VM4 : MavericksViewModel<out S4>,
     S4 : MavericksState,
-    VM5 : MavericksViewModel<S5>,
+    VM5 : MavericksViewModel<out S5>,
     S5 : MavericksState,
     Args : Parcelable>
 internal constructor(
@@ -1089,15 +1089,15 @@ internal constructor(
 open class FiveStatesBuilder<
     V : MavericksView,
     S1 : MavericksState,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S2 : MavericksState,
-    VM2 : MavericksViewModel<S2>,
+    VM2 : MavericksViewModel<out S2>,
     S3 : MavericksState,
-    VM3 : MavericksViewModel<S3>,
+    VM3 : MavericksViewModel<out S3>,
     S4 : MavericksState,
-    VM4 : MavericksViewModel<S4>,
+    VM4 : MavericksViewModel<out S4>,
     S5 : MavericksState,
-    VM5 : MavericksViewModel<S5>>
+    VM5 : MavericksViewModel<out S5>>
 internal constructor(
     vm1: KProperty1<V, VM1>,
     defaultState1: S1,
@@ -1136,17 +1136,17 @@ internal constructor(
 
 class SixViewModelMockBuilder<
     V : MockableMavericksView,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S1 : MavericksState,
-    VM2 : MavericksViewModel<S2>,
+    VM2 : MavericksViewModel<out S2>,
     S2 : MavericksState,
-    VM3 : MavericksViewModel<S3>,
+    VM3 : MavericksViewModel<out S3>,
     S3 : MavericksState,
-    VM4 : MavericksViewModel<S4>,
+    VM4 : MavericksViewModel<out S4>,
     S4 : MavericksState,
-    VM5 : MavericksViewModel<S5>,
+    VM5 : MavericksViewModel<out S5>,
     S5 : MavericksState,
-    VM6 : MavericksViewModel<S6>,
+    VM6 : MavericksViewModel<out S6>,
     S6 : MavericksState,
     Args : Parcelable>
 internal constructor(
@@ -1213,17 +1213,17 @@ internal constructor(
 open class SixStatesBuilder<
     V : MavericksView,
     S1 : MavericksState,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S2 : MavericksState,
-    VM2 : MavericksViewModel<S2>,
+    VM2 : MavericksViewModel<out S2>,
     S3 : MavericksState,
-    VM3 : MavericksViewModel<S3>,
+    VM3 : MavericksViewModel<out S3>,
     S4 : MavericksState,
-    VM4 : MavericksViewModel<S4>,
+    VM4 : MavericksViewModel<out S4>,
     S5 : MavericksState,
-    VM5 : MavericksViewModel<S5>,
+    VM5 : MavericksViewModel<out S5>,
     S6 : MavericksState,
-    VM6 : MavericksViewModel<S6>>
+    VM6 : MavericksViewModel<out S6>>
 internal constructor(
     vm1: KProperty1<V, VM1>,
     defaultState1: S1,
@@ -1266,19 +1266,19 @@ internal constructor(
 
 class SevenViewModelMockBuilder<
     V : MockableMavericksView,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S1 : MavericksState,
-    VM2 : MavericksViewModel<S2>,
+    VM2 : MavericksViewModel<out S2>,
     S2 : MavericksState,
-    VM3 : MavericksViewModel<S3>,
+    VM3 : MavericksViewModel<out S3>,
     S3 : MavericksState,
-    VM4 : MavericksViewModel<S4>,
+    VM4 : MavericksViewModel<out S4>,
     S4 : MavericksState,
-    VM5 : MavericksViewModel<S5>,
+    VM5 : MavericksViewModel<out S5>,
     S5 : MavericksState,
-    VM6 : MavericksViewModel<S6>,
+    VM6 : MavericksViewModel<out S6>,
     S6 : MavericksState,
-    VM7 : MavericksViewModel<S7>,
+    VM7 : MavericksViewModel<out S7>,
     S7 : MavericksState,
     Args : Parcelable>
 internal constructor(
@@ -1350,19 +1350,19 @@ internal constructor(
 open class SevenStatesBuilder<
     V : MavericksView,
     S1 : MavericksState,
-    VM1 : MavericksViewModel<S1>,
+    VM1 : MavericksViewModel<out S1>,
     S2 : MavericksState,
-    VM2 : MavericksViewModel<S2>,
+    VM2 : MavericksViewModel<out S2>,
     S3 : MavericksState,
-    VM3 : MavericksViewModel<S3>,
+    VM3 : MavericksViewModel<out S3>,
     S4 : MavericksState,
-    VM4 : MavericksViewModel<S4>,
+    VM4 : MavericksViewModel<out S4>,
     S5 : MavericksState,
-    VM5 : MavericksViewModel<S5>,
+    VM5 : MavericksViewModel<out S5>,
     S6 : MavericksState,
-    VM6 : MavericksViewModel<S6>,
+    VM6 : MavericksViewModel<out S6>,
     S7 : MavericksState,
-    VM7 : MavericksViewModel<S7>>
+    VM7 : MavericksViewModel<out S7>>
 internal constructor(
     vm1: KProperty1<V, VM1>,
     defaultState1: S1,

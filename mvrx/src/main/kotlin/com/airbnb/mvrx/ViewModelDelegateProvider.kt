@@ -8,8 +8,8 @@ import kotlin.reflect.KProperty
  * Creates an object that provides a Lazy ViewModel for use in Fragments.
  */
 @PublishedApi
-internal inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> viewModelDelegateProvider(
-    viewModelClass: KClass<VM>,
+internal inline fun <T, reified VM : MavericksViewModel<out S>, reified S : MavericksState> viewModelDelegateProvider(
+    viewModelClass: KClass<out VM>,
     crossinline keyFactory: () -> String,
     existingViewModel: Boolean,
     noinline viewModelProvider: (stateFactory: MavericksStateFactory<VM, S>) -> VM
@@ -58,7 +58,7 @@ interface ViewModelDelegateFactory {
      * the viewmodel. It knows how to configure the viewmodel, and just needs to be provided with
      * a state factory.
      */
-    fun <S : MavericksState, T, VM : MavericksViewModel<S>> createLazyViewModel(
+    fun <S : MavericksState, T, VM : MavericksViewModel<out S>> createLazyViewModel(
         fragment: T,
         viewModelProperty: KProperty<*>,
         viewModelClass: KClass<VM>,
@@ -80,7 +80,7 @@ interface ViewModelDelegateFactory {
  * only while the Fragment is in the STARTED lifecycle state.
  */
 class DefaultViewModelDelegateFactory : ViewModelDelegateFactory {
-    override fun <S : MavericksState, T, VM : MavericksViewModel<S>> createLazyViewModel(
+    override fun <S : MavericksState, T, VM : MavericksViewModel<out S>> createLazyViewModel(
         fragment: T,
         viewModelProperty: KProperty<*>,
         viewModelClass: KClass<VM>,

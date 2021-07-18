@@ -3,7 +3,7 @@ package com.airbnb.mvrx
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
-internal class MavericksFactory<VM : MavericksViewModel<S>, S : MavericksState>(
+internal class MavericksFactory<VM : MavericksViewModel<out S>, S : MavericksState>(
     private val viewModelClass: Class<out VM>,
     private val stateClass: Class<out S>,
     private val viewModelContext: ViewModelContext,
@@ -31,7 +31,7 @@ internal class MavericksFactory<VM : MavericksViewModel<S>, S : MavericksState>(
 }
 
 @Suppress("UNCHECKED_CAST")
-private fun <VM : MavericksViewModel<S>, S : MavericksState> createViewModel(
+private fun <VM : MavericksViewModel<out S>, S : MavericksState> createViewModel(
     viewModelClass: Class<out VM>,
     stateClass: Class<out S>,
     viewModelContext: ViewModelContext,
@@ -63,7 +63,7 @@ private fun <VM : MavericksViewModel<S>, S : MavericksState> createViewModel(
 }
 
 @Suppress("UNCHECKED_CAST", "NestedBlockDepth")
-private fun <VM : MavericksViewModel<S>, S : MavericksState> createDefaultViewModel(viewModelClass: Class<VM>, state: S): VM? {
+private fun <VM : MavericksViewModel<out S>, S : MavericksState> createDefaultViewModel(viewModelClass: Class<VM>, state: S): VM? {
     // If we are checking for a default ViewModel, we expect only a single default constructor. Any other case
     // is a misconfiguration and we will throw an appropriate error under further inspection.
     if (viewModelClass.constructors.size == 1) {

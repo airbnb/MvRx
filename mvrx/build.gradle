@@ -51,6 +51,8 @@ dependencies {
     implementation Libraries.lifecycleCommon
     implementation Libraries.viewModelKtx
     implementation Libraries.runtimeKtx
+    
+    debugImplementation Libraries.fragmentTesting
 
     testImplementation TestLibraries.junit
     testImplementation TestLibraries.kotlinCoroutinesTest

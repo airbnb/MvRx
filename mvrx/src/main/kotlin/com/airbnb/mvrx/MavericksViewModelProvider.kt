@@ -28,7 +28,7 @@ object MavericksViewModelProvider {
      * @param initialStateFactory A way to specify how to create the initial state, can be mocked out for testing.
      *
      */
-    fun <VM : MavericksViewModel<S>, S : MavericksState> get(
+    fun <VM : MavericksViewModel<out S>, S : MavericksState> get(
         viewModelClass: Class<out VM>,
         stateClass: Class<out S>,
         viewModelContext: ViewModelContext,
@@ -76,7 +76,7 @@ object MavericksViewModelProvider {
         return viewModel.viewModel
     }
 
-    private fun <VM : MavericksViewModel<S>, S : MavericksState> VM.getSavedStateBundle(
+    private fun <VM : MavericksViewModel<out S>, S : MavericksState> VM.getSavedStateBundle(
         initialArgs: Any?
     ) = withState(this) { state ->
         Bundle().apply {
