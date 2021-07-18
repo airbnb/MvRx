@@ -29,10 +29,13 @@ fun <T : Fragment> T._fragmentArgsProvider(): Any? = arguments?.get(Mavericks.KE
  * Mavericks will also handle persistence across process restarts. Refer to [PersistState] for more info.
  *
  * Use [keyFactory] if you have multiple ViewModels of the same class in the same scope.
+ *
+ * In case arguments are not stored under [Mavericks.KEY_ARG] provide your own parcelable arguments using [argsProvider].
  */
 inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> T.fragmentViewModel(
     viewModelClass: KClass<VM> = VM::class,
-    crossinline keyFactory: () -> String = { viewModelClass.java.name }
+    crossinline keyFactory: () -> String = { viewModelClass.java.name },
+    crossinline argsProvider: () -> Any? = ::_fragmentArgsProvider
 ): MavericksDelegateProvider<T, VM> where T : Fragment, T : MavericksView =
     viewModelDelegateProvider(
         viewModelClass,
@@ -44,7 +47,7 @@ inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> T
             stateClass = S::class.java,
             viewModelContext = FragmentViewModelContext(
                 activity = requireActivity(),
-                args = _fragmentArgsProvider(),
+                args = argsProvider(),
                 fragment = this
             ),
             key = keyFactory(),
@@ -59,7 +62,8 @@ inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> T
  */
 inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> T.parentFragmentViewModel(
     viewModelClass: KClass<VM> = VM::class,
-    crossinline keyFactory: () -> String = { viewModelClass.java.name }
+    crossinline keyFactory: () -> String = { viewModelClass.java.name },
+    crossinline argsProvider: () -> Any? = ::_fragmentArgsProvider
 ): MavericksDelegateProvider<T, VM> where T : Fragment, T : MavericksView =
     viewModelDelegateProvider(
         viewModelClass,
@@ -86,7 +90,7 @@ inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> T
                     stateClass = S::class.java,
                     viewModelContext = FragmentViewModelContext(
                         activity = this.requireActivity(),
-                        args = _fragmentArgsProvider(),
+                        args = argsProvider(),
                         fragment = parent
                     ),
                     key = key,
@@ -104,7 +108,7 @@ inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> T
         }
         val viewModelContext = FragmentViewModelContext(
             requireActivity(),
-            _fragmentArgsProvider(),
+            argsProvider(),
             topParentFragment!!
         )
 
@@ -122,7 +126,8 @@ inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> T
  */
 inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> T.targetFragmentViewModel(
     viewModelClass: KClass<VM> = VM::class,
-    crossinline keyFactory: () -> String = { viewModelClass.java.name }
+    crossinline keyFactory: () -> String = { viewModelClass.java.name },
+    crossinline argsProvider: () -> Any? = { _requireTargetFragment()._fragmentArgsProvider() }
 ): MavericksDelegateProvider<T, VM> where T : Fragment, T : MavericksView =
     viewModelDelegateProvider(
         viewModelClass,
@@ -134,17 +139,13 @@ inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> T
         // so we just test the common case of "existing". We can't be sure that the fragment
         // was designed for it to be used in the non-existing case (ie it may require arguments)
 
-        @Suppress("DEPRECATION")
-        val targetFragment =
-            requireNotNull(targetFragment) { "There is no target fragment for ${this::class.java.simpleName}!" }
-
         MavericksViewModelProvider.get(
             viewModelClass = viewModelClass.java,
             stateClass = S::class.java,
             viewModelContext = FragmentViewModelContext(
                 activity = requireActivity(),
-                args = targetFragment._fragmentArgsProvider(),
-                fragment = targetFragment
+                args = argsProvider(),
+                fragment = _requireTargetFragment()
             ),
             key = keyFactory(),
             initialStateFactory = stateFactory
@@ -152,12 +153,24 @@ inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> T
     }
 
 /**
+ * Return the target fragment set by [Fragment.setTargetFragment].
+ * Throws [IllegalArgumentException] if there is no target fragment.
+ */
+@Suppress("FunctionName", "DEPRECATION")
+@InternalMavericksApi
+fun <T : Fragment> T._requireTargetFragment(): Fragment =
+    requireNotNull(targetFragment) { "There is no target fragment for ${this::class.java.simpleName}!" }
+
+
+
+/**
  * [activityViewModel] except it will throw [IllegalStateException] if the ViewModel doesn't already exist.
  * Use this for screens in the middle of a flow that cannot reasonably be an entry point to the flow.
  */
 inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> T.existingViewModel(
     viewModelClass: KClass<VM> = VM::class,
-    crossinline keyFactory: () -> String = { viewModelClass.java.name }
+    crossinline keyFactory: () -> String = { viewModelClass.java.name },
+    crossinline argsProvider: () -> Any? = ::_fragmentArgsProvider
 ): MavericksDelegateProvider<T, VM> where T : Fragment, T : MavericksView =
     viewModelDelegateProvider(
         viewModelClass,
@@ -170,7 +183,7 @@ inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> T
             stateClass = S::class.java,
             viewModelContext = ActivityViewModelContext(
                 requireActivity(),
-                _fragmentArgsProvider()
+                argsProvider()
             ),
             key = keyFactory(),
             initialStateFactory = stateFactory,
@@ -183,7 +196,8 @@ inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> T
  */
 inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> T.activityViewModel(
     viewModelClass: KClass<VM> = VM::class,
-    noinline keyFactory: () -> String = { viewModelClass.java.name }
+    noinline keyFactory: () -> String = { viewModelClass.java.name },
+    crossinline argsProvider: () -> Any? = ::_fragmentArgsProvider
 ): MavericksDelegateProvider<T, VM> where T : Fragment, T : MavericksView =
     viewModelDelegateProvider(
         viewModelClass,
@@ -196,7 +210,7 @@ inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> T
             stateClass = S::class.java,
             viewModelContext = ActivityViewModelContext(
                 activity = requireActivity(),
-                args = _fragmentArgsProvider()
+                args = argsProvider()
             ),
             key = keyFactory(),
             initialStateFactory = stateFactory
@@ -208,12 +222,16 @@ inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> T
  */
 inline fun <T, reified VM : MavericksViewModel<S>, reified S : MavericksState> T.viewModel(
     viewModelClass: KClass<VM> = VM::class,
-    crossinline keyFactory: () -> String = { viewModelClass.java.name }
+    crossinline keyFactory: () -> String = { viewModelClass.java.name },
+    crossinline argsProvider: () -> Any? = { intent.extras?.get(Mavericks.KEY_ARG) }
 ) where T : ComponentActivity = lifecycleAwareLazy(this) {
     MavericksViewModelProvider.get(
         viewModelClass = viewModelClass.java,
         stateClass = S::class.java,
-        viewModelContext = ActivityViewModelContext(this, intent.extras?.get(Mavericks.KEY_ARG)),
+        viewModelContext = ActivityViewModelContext(
+            activity = this,
+            args = argsProvider()
+        ),
         key = keyFactory()
     )
 }
